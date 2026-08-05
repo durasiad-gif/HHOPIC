@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OPIc Q&A 카드</title>
+<style>
+  :root {
+    --bg: #0f1115;
+    --card: #1a1d24;
+    --accent: #4f8cff;
+    --text: #e8e8ea;
+    --muted: #b7bcc6;
+    --border: #2a2e38;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 16px;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    line-height: 1.5;
+  }
+  h1 {
+    font-size: 26px;
+    margin: 4px 0 4px;
+  }
+  .sub {
+    color: var(--muted);
+    font-size: 17px;
+    line-height: 1.6;
+    margin-bottom: 20px;
+  }
+  .section-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--accent);
+    margin: 30px 0 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+  .q {
+    padding: 16px 18px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.5;
+  }
+  .q .arrow {
+    color: var(--accent);
+    transition: transform 0.2s ease;
+    flex-shrink: 0;
+    font-size: 14px;
+  }
+  .card.open .arrow { transform: rotate(90deg); }
+  .a {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+    padding: 0 18px;
+    font-size: 18px;
+    color: var(--muted);
+  }
+  .card.open .a {
+    max-height: 4000px;
+    padding: 0 18px 18px;
+  }
+  .a p {
+    margin: 0 0 10px;
+    line-height: 2.2;
+  }
+  .a strong {
+    color: #ffd479;
+    font-weight: 700;
+  }
+  .tag {
+    display: inline-block;
+    font-size: 15px;
+    color: var(--accent);
+    background: rgba(79,140,255,0.12);
+    padding: 3px 10px;
+    border-radius: 20px;
+    margin-bottom: 8px;
+  }
+  .expr {
+    font-size: 16px;
+    line-height: 1.6;
+    color: #8fd19e;
+    margin-top: 8px;
+  }
+  .filter-bar {
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    padding: 8px 0 12px;
+    z-index: 10;
+  }
+  .filter-bar select {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    background: var(--card);
+    color: var(--text);
+    border: 1px solid var(--border);
+    font-size: 18px;
+  }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+
+<h1>OPIc Q&A 카드 — 호바리</h1>
+<div class="sub">질문 탭하면 모범답안 펼쳐짐. <strong style="color:#ffd479">굵은 글씨</strong> = 관용구/고급 시제/어려운 표현. 서베이 확정 항목(운동/여행/여가) + 돌발 대비(Tech/SNS) + 롤플레이 패턴 포함. (업데이트: 2026-08-05)</div>
+
+<div class="filter-bar">
+  <select id="filter" onchange="filterSections()">
+    <option value="all">전체 보기</option>
+  </select>
+</div>
+
+<div id="content"></div>
+
+<script>
+const data = [
+  {
+    section: "자기소개",
+    cards: [
+      { q: "Please introduce yourself.", a: "Hi Ava, it's nice to meet you. My name is Hyohyeok, and I live in Gimcheon, a small city right in the middle of South Korea. Since there isn't a whole lot to do around here, I've <strong>gotten really into</strong> exercise as a way to fill my free time — I go to the gym every morning and go swimming every evening, and <strong>I've kept that routine up for years now</strong>. Besides working out, I also love cooking, especially for my wife. I'm pretty good at making Korean dishes like kimchi-jjigae and bulgogi, so <strong>it's actually a bit of a shame</strong> you can't try them, Ava. Anyway, that's a little about me — let's get started.", expr: "표현: gotten really into / I've kept that routine up (현재완료) / it's actually a bit of a shame" }
+    ]
+  },
+  {
+    section: "운동 — 수영",
+    cards: [
+      { q: "Describe your swimming routine in detail.", a: "I usually go swimming around 7 p.m. on weekdays, right after I <strong>wrap up</strong> my day. I'm actually part of a masters class, so I'm swimming alongside a lot of people who are seriously good at it, which keeps me motivated to keep improving. Before getting in the pool, I always take a shower and do a quick warm-up — rotating my shoulders, arms, and ankles — so I don't pull anything. The class runs for about 50 minutes, during which I practice four different strokes: freestyle, butterfly, breaststroke, and so on. By the end I'm completely exhausted, but there's this <strong>exhilarating feeling</strong> right after, and I think that's honestly why I keep <strong>dragging myself</strong> there every single day, even when I'm tired.", expr: "표현: exhilarating feeling / dragging myself there / wrap up my day" },
+      { q: "Tell me about a swimming competition you participated in.", a: "The last time I competed was last month, in the 50m breaststroke — my main stroke. My personal best <strong>had been stuck</strong> at 40 seconds for a while, and no matter how hard I trained, I couldn't seem to <strong>break through that plateau</strong>. So I trained even harder leading up to the meet — stretching, dryland workouts, extra swimming — and on competition day I actually managed to set a new personal record, which felt incredible. Still, I only finished 4th overall, <strong>just barely missing the podium</strong> despite the new PR, so I'm now training even harder for next month's meet, <strong>determined to turn</strong> that near-miss into an actual medal.", expr: "표현: hit/break through a plateau / narrowly (just barely) missing / had been stuck (과거완료)" },
+      { q: "Was there ever a problem or unexpected situation related to swimming?", a: "Something unexpected happened related to swimming last summer. My wife and I went to Gangneung to enjoy the beach, and we had a great time taking in the exotic scenery, eating seafood, and snorkeling. But <strong>things took a turn</strong> during a surfing lesson we signed up for — <strong>I'd surfed before</strong>, but it was my wife's first time, and <strong>to make matters worse</strong>, she wasn't a very strong swimmer. A big wave suddenly hit us during the lesson, and she ended up getting disoriented in the water. <strong>Without thinking twice</strong>, I swam straight to her and pulled her to safety, and thanks to the lifeguard, we grabbed some flotation tubes and made it back to shore safely. That experience was <strong>so terrifying that, as a result</strong>, my wife decided to start taking swimming lessons.", expr: "표현: things took a turn / to make matters worse / I'd surfed before (과거완료) / so~that, as a result" }
+    ]
+  },
+  {
+    section: "운동 — 헬스",
+    cards: [
+      { q: "How is your gym routine part of your daily life?", a: "Every morning I <strong>hit the gym</strong> before work — <strong>I've kept this up</strong> for about 10 years, which is why I'm in noticeably better shape than most people my age. It's mainly focused on strength training, and I usually listen to pop music, especially Ed Sheeran, to stay energized while lifting. This routine <strong>has become such a fixed part of my day</strong> that skipping it actually feels more uncomfortable than doing it.", expr: "표현: hit the gym / I've kept this up (현재완료)" }
+    ]
+  },
+  {
+    section: "조깅/걷기 · 공원가기",
+    cards: [
+      { q: "Tell me about a park you go to and what you do there.", a: "There's a riverside park near my place that I go to fairly often — partly to relax, and partly because it's where I jog. What's a bit unusual about me is that I actually jog more in winter than summer, since <strong>I can't stand the heat</strong> or direct sunlight, so I always go at night <strong>regardless of the season</strong>. The same park also has an extreme sports facility built into it, and even though I don't do extreme sports myself, I like watching the people who do — they seem <strong>completely unafraid of</strong> getting hurt, which amazes me every time. So while they treat the park as a playground for taking risks, I treat it as my quiet, sun-free jogging route.", expr: "표현: can't stand ~ / regardless of the season" }
+    ]
+  },
+  {
+    section: "영화보기",
+    cards: [
+      { q: "Tell me about a movie that left an impression on you.", a: "One movie that really stood out to me recently was \"Hope,\" directed by Na Hong-jin, whose earlier films <strong>I'd already been a fan of</strong>. <strong>I've always liked</strong> sci-fi as a genre, but what made this one special was that it was a <strong>distinctly Korean take on</strong> sci-fi, which felt refreshing compared to the usual Hollywood blockbusters. It gave me a different perspective on what the genre could look like outside the typical big-budget formula.", expr: "표현: distinctly Korean take on / I'd already been a fan of (과거완료)" }
+    ]
+  },
+  {
+    section: "음악감상하기",
+    cards: [
+      { q: "What kind of music do you listen to, and when?", a: "I mostly listen to pop music, and Ed Sheeran is my favorite artist <strong>by far</strong>. I usually listen while driving or working out, since music helps me stay energized and focused rather than just sitting in silence. <strong>It's become such a habit that</strong> a workout without music feels noticeably less motivating.", expr: "표현: by far / it's become such a habit that (현재완료)" }
+    ]
+  },
+  {
+    section: "해외여행",
+    cards: [
+      { q: "Tell me about a memorable trip abroad.", a: "My most memorable trip abroad was my honeymoon in Bali with my wife — it was actually my first time in Southeast Asia. <strong>What surprised me was</strong> how well the food suited my taste, and <strong>on top of that</strong>, everyone we met was incredibly kind and welcoming. We stayed at a huge luxury resort, and <strong>being pampered</strong> like that for days made the whole trip <strong>feel like a dream rather than reality</strong>.", expr: "표현: what surprised me was / on top of that / being pampered" },
+      { q: "Did you ever face a problem while preparing for or during that trip?", a: "Right before we were supposed to leave for our honeymoon, we realized my wife <strong>had lost</strong> her passport — <strong>as you can imagine</strong>, we panicked, since we thought the whole trip might fall apart. Fortunately, the embassy and our travel agency <strong>stepped in</strong> and helped us sort it out quickly, <strong>which meant that</strong> we ended up making it to Bali without missing our flight after all. <strong>Looking back on it</strong>, it taught me to always double-check documents days in advance rather than the night before.", expr: "표현: had lost (과거완료) / stepped in (구동사) / looking back on it" }
+    ]
+  },
+  {
+    section: "국내여행 · 캠핑 · 해변",
+    cards: [
+      { q: "Tell me about a camping or domestic trip you went on.", a: "My first-ever camping trip was a car-camping trip to Uljin in my Tesla, right by the beach. Since it was my first time, we kept things minimal and didn't over-prepare, but <strong>that simplicity ended up being part of the charm</strong>. During the day we went snorkeling and swam right off the beach, and in the evening we grilled meat and just relaxed without any fixed schedule — <strong>despite how basic</strong> our setup was, it turned out to be <strong>one of the most enjoyable trips I've had</strong>. It made me realize that a trip doesn't need to be elaborate to be memorable.", expr: "표현: ended up being / despite how basic / one of the most ~ I've had (현재완료)" }
+    ]
+  },
+  {
+    section: "집에서 보내는 휴가",
+    cards: [
+      { q: "How do you like to spend a vacation day at home?", a: "When it's this hot out, my ideal way to spend a vacation day is staying home with the AC on, having a beer, and playing computer games. League of Legends is my favorite by far, and I'm also a big fan of watching professional e-sports — Faker <strong>is basically a household name</strong> at this point if you follow the scene at all. <strong>Instead of</strong> going out and dealing with the heat and crowds, I find just as much excitement staying in and watching top-tier matches.", expr: "표현: is basically a household name / instead of ~, I find just as much" }
+    ]
+  },
+  {
+    section: "돌발 — Technology",
+    cards: [
+      { q: "What was the latest electronic device you bought?", a: "I recently got a Tesla, and the experience honestly <strong>reminds me of</strong> the first time I switched to a smartphone — that's how packed with new technology it feels. <strong>What makes the contrast even bigger is</strong> that my previous car was over 10 years old, so the gap in technology was huge. On top of that, since it's electric, it's better for the environment, and the fuel cost is roughly a third of what I used to pay for gas. As a result, <strong>I've become</strong> one of those people who can't stop talking about how good EVs are.", expr: "표현: reminds me of / what makes the contrast even bigger is / I've become (현재완료)" }
+    ]
+  },
+  {
+    section: "돌발 — SNS",
+    cards: [
+      { q: "Tell me about your social media habits.", a: "I used to spend a lot of time on Instagram, scrolling through it almost out of habit. However, at some point I realized it was <strong>eating up way more of my time than it was worth</strong>, so <strong>I've been deliberately cutting back</strong> lately. Nowadays I basically only use it for the messenger function, rather than browsing feeds like I used to. Looking back, I think it was a good change, since I have noticeably more free time now.", expr: "표현: eating up ~ than it was worth / I've been deliberately cutting back (현재완료진행)" }
+    ]
+  },
+  {
+    section: "롤플레이 필수 패턴",
+    cards: [
+      { q: "Type A — 질문하기형 (예: 여행 다녀온 친구에게 전화해서 질문하기)", a: "흐름: 인사 → 전화 건 이유 → 질문 3~4개 → 감사/마무리<br><br>Hello, is this Soo-Ahn? It's me, Jae-Hyeong. I heard you just got back from a trip. How was it? <strong>The reason I'm calling is because</strong> I want to take my family on a trip too and I'd like to ask a few questions. Which website did you use to book your flights? Were you happy with your hotel? Are there any restaurants you'd recommend? Thanks for your help — I'll talk to you soon!", expr: "필수표현: The reason I'm calling is because ~ / I heard that ~" },
+      { q: "Type B — 문제 해결형 (예: 약속 취소/변경하기)", a: "흐름: 인사 → 원래 약속 언급 → 문제(이유) 설명 → 대안 2~3개 제시 → 마무리<br><br>Hello, is this Jin-Hee? It's Joo-Hyun. <strong>I know we're supposed to</strong> meet tomorrow, but I don't think I can make it — <strong>something came up</strong>. <strong>I was wondering if</strong> you're free next weekend instead. If not, let me know when works for you. Sorry about this, and call me back when you get this. Bye.", expr: "필수표현: I know we're supposed to ~, but / I was wondering if ~ / something came up" }
+    ]
+  }
+];
+
+const container = document.getElementById('content');
+const filterSelect = document.getElementById('filter');
+
+data.forEach((sec, si) => {
+  const opt = document.createElement('option');
+  opt.value = 'sec-' + si;
+  opt.textContent = sec.section;
+  filterSelect.appendChild(opt);
+
+  const title = document.createElement('div');
+  title.className = 'section-title';
+  title.id = 'sec-' + si;
+  title.textContent = sec.section;
+  container.appendChild(title);
+
+  sec.cards.forEach((c, ci) => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.dataset.section = 'sec-' + si;
+    const sentences = c.a
+      .split(/(?<=[.?!])\s+(?=[A-Z가-힣])/)
+      .map(s => '<p>' + s.trim() + '</p>')
+      .join('');
+    card.innerHTML = `
+      <div class="q" onclick="this.parentElement.classList.toggle('open')">
+        <span>${ci + 1}. ${c.q}</span>
+        <span class="arrow">▶</span>
+      </div>
+      <div class="a">
+        ${sentences}
+        ${c.expr ? '<div class="expr">' + c.expr + '</div>' : ''}
+      </div>
+    `;
+    container.appendChild(card);
+  });
+});
+
+function filterSections() {
+  const val = filterSelect.value;
+  document.querySelectorAll('.section-title').forEach(t => {
+    t.classList.toggle('hidden', val !== 'all' && t.id !== val);
+  });
+  document.querySelectorAll('.card').forEach(c => {
+    c.classList.toggle('hidden', val !== 'all' && c.dataset.section !== val);
+  });
+}
+</script>
+
+</body>
+</html>
