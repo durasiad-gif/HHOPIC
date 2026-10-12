@@ -117,6 +117,21 @@
     font-size: 18px;
   }
   .hidden { display: none; }
+  .ctrl { display: flex; gap: 8px; margin-top: 8px; }
+  .ctrl button, .card-play {
+    padding: 10px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--text);
+    font-size: 16px;
+    cursor: pointer;
+  }
+  .ctrl button { flex: 1; }
+  .ctrl button.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .card-play { margin: 4px 0 10px; color: var(--accent); }
+  .sp { cursor: pointer; color: var(--accent); margin-right: 8px; font-size: 16px; }
+  .a p.speaking { background: rgba(79,140,255,0.18); border-radius: 6px; }
 </style>
 </head>
 <body>
@@ -128,6 +143,12 @@
   <select id="filter" onchange="filterSections()">
     <option value="all">전체 보기</option>
   </select>
+  <div class="ctrl">
+    <button onclick="playAll()">▶ 1번부터 전체 재생</button>
+    <button onclick="stopAll()">■ 정지</button>
+    <button id="r08" onclick="setRate(0.8)">0.8x</button>
+    <button id="r10" class="on" onclick="setRate(1)">1x</button>
+  </div>
 </div>
 
 <div id="content"></div>
@@ -231,23 +252,80 @@ data.forEach((sec, si) => {
     const card = document.createElement('div');
     card.className = 'card';
     card.dataset.section = 'sec-' + si;
-    const sentences = c.a
-      .split(/(?<=[.?!])\s+(?=[A-Z가-힣])/)
-      .map(s => '<p>' + s.trim() + '</p>')
-      .join('');
+    const parts = c.a.split(/(?<=[.?!])\s+(?=[A-Z가-힣])/);
+    const sentences = parts.map(s => '<p><span class="sp">▶</span>' + s.trim() + '</p>').join('');
     card.innerHTML = `
       <div class="q" onclick="this.parentElement.classList.toggle('open')">
         <span>${ci + 1}. ${c.q}</span>
         <span class="arrow">▶</span>
       </div>
       <div class="a">
+        <button class="card-play">▶ 이 답변 전체 재생</button>
         ${sentences}
         ${c.expr ? '<div class="expr">' + c.expr + '</div>' : ''}
       </div>
     `;
     container.appendChild(card);
+    const pEls = Array.from(card.querySelectorAll('.a p'));
+    const items = pEls.map((el, i) => ({ el, text: speakText(parts[i]) })).filter(x => x.text);
+    card._items = items;
+    card.querySelector('.card-play').onclick = () => { card.classList.add('open'); playList(items); };
+    items.forEach(it => { it.el.querySelector('.sp').onclick = () => playList([it]); });
   });
 });
+
+let rate = 1, token = 0;
+function speakText(html) {
+  const d = document.createElement('div');
+  d.innerHTML = html.replace(/<br\s*\/?>/g, '\n');
+  return d.textContent.split('\n')
+    .filter(l => l.trim() && !l.trim().startsWith('흐름'))
+    .join(' ').trim();
+}
+function setRate(r) {
+  rate = r;
+  document.getElementById('r08').classList.toggle('on', r === 0.8);
+  document.getElementById('r10').classList.toggle('on', r === 1);
+}
+function clearHl() {
+  document.querySelectorAll('.speaking').forEach(e => e.classList.remove('speaking'));
+}
+function stopAll() {
+  token++;
+  speechSynthesis.cancel();
+  clearHl();
+}
+function playList(items) {
+  stopAll();
+  const my = token;
+  let i = 0;
+  const next = () => {
+    if (my !== token || i >= items.length) { if (my === token) clearHl(); return; }
+    const it = items[i++];
+    clearHl();
+    it.el.classList.add('speaking');
+    it.el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    const u = new SpeechSynthesisUtterance(it.text);
+    u.lang = 'en-US';
+    u.rate = rate;
+    const v = speechSynthesis.getVoices().find(v => v.lang.startsWith('en'));
+    if (v) u.voice = v;
+    u.onend = next;
+    u.onerror = () => { if (my === token) next(); };
+    speechSynthesis.speak(u);
+  };
+  next();
+}
+function playAll() {
+  const all = [];
+  document.querySelectorAll('.card').forEach(c => {
+    if (!c.classList.contains('hidden')) {
+      c.classList.add('open');
+      all.push(...c._items);
+    }
+  });
+  playList(all);
+}
 
 function filterSections() {
   const val = filterSelect.value;
