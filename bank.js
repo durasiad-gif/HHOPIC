@@ -31,9 +31,9 @@ const bank = [
   {g:"gym", item:"헬스", t:"과거경험", q:"Have you ever had a problem or gotten hurt while working out? What happened, and what did you do?"},
 
   // ===== 공원 =====
-  {g:"park", item:"공원", t:"묘사", q:"Tell me about a park you often go to. Where is it, and what does it look like?"},
-  {g:"park", item:"공원", t:"루틴", q:"What do you usually do when you go to the park? Who do you go with?"},
-  {g:"park", item:"공원", t:"과거경험", q:"Tell me about a memorable thing that happened at a park."},
+  {g:"park", item:"공원", t:"묘사", q:"You indicated in the survey that you enjoy going to parks. Which park do you like to go to? Where is it, and what does it look like? Who do you usually go with? Please describe your favorite park in detail."},
+  {g:"park", item:"공원", t:"루틴", q:"How often do you go to the park? What do you usually do there? Describe a typical day at the park, from the moment you arrive to the time you leave."},
+  {g:"park", item:"공원", t:"과거경험", q:"Tell me about a memorable experience you had at a park. When was it, and who were you with? What happened, and why was it so memorable?"},
   {g:"park", item:"공원", t:"비교", q:"How are parks today different from the parks you went to as a child?"},
   {g:"park", item:"걷기·조깅", t:"루틴", q:"You said you like walking and jogging. Where and when do you usually do it? Describe your routine."},
   {g:"park", item:"걷기·조깅", t:"과거경험", q:"When did you start jogging or walking regularly, and why? How has it affected your life?"},
