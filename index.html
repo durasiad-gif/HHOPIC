@@ -136,7 +136,11 @@
   }
   .ctrl button { flex: 1; }
   .ctrl button.on { background: var(--accent); border-color: var(--accent); color: #fff; }
-  .card-play { margin: 4px 0 10px; color: var(--accent); }
+  .card-play { margin: 4px 6px 10px 0; color: var(--accent); }
+  .sec-ctrl { display: flex; gap: 6px; margin: 2px 0 8px; }
+  .sec-ctrl button { flex: 1; padding: 7px 8px; border-radius: 8px; border: 1px solid var(--accent); background: transparent; color: var(--accent); font-size: 13px; cursor: pointer; }
+  .loopinfo { position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%); background: var(--accent); color: #fff; padding: 8px 14px; border-radius: 20px; font-size: 13px; display: none; z-index: 50; }
+  .loopinfo.on { display: block; }
   .sp { cursor: pointer; color: var(--accent); margin-right: 8px; font-size: 16px; }
   .a p.speaking { background: rgba(79,140,255,0.18); border-radius: 6px; }
   .tabs { display: flex; gap: 6px; margin: 4px 0 14px; }
@@ -234,6 +238,7 @@
 <!-- 진도 -->
 <div class="pane" id="p-progress"><div id="progressBox"></div></div>
 
+<div class="loopinfo" id="loopinfo" onclick="stopAll()"></div>
 <script src="cards.js"></script>
 <script src="bank.js"></script>
 <script src="progress.js"></script>
@@ -282,7 +287,17 @@ GROUPS.forEach(g => {
     title.className = 'section-title';
     title.textContent = sec.section;
     wrap.appendChild(title);
-    sec.cards.forEach((c, ci) => wrap.appendChild(makeCard(c, ci)));
+    const made = sec.cards.map((c, ci) => makeCard(c, ci));
+    if (made.length > 1) {
+      const sc = document.createElement('div');
+      sc.className = 'sec-ctrl';
+      sc.innerHTML = `<button>▶ 콤보 전체 재생</button><button>🔁 콤보 반복</button>`;
+      const all = () => { made.forEach(c => c.classList.add('open')); return made.flatMap(c => c._items); };
+      sc.children[0].onclick = () => playList(all(), false, sec.section);
+      sc.children[1].onclick = () => playList(all(), true, sec.section);
+      wrap.appendChild(sc);
+    }
+    made.forEach(c => wrap.appendChild(c));
   });
 
   // 아직 모범답안이 없는 연습 문항 = 앞으로 채울 자리
@@ -313,14 +328,16 @@ function makeCard(c, ci) {
       <span>${ci + 1}. ${c.q}</span><span class="arrow">▶</span>
     </div>
     <div class="a">
-      <button class="card-play">▶ 이 답변 전체 재생</button>
+      <button class="card-play">▶ 재생</button><button class="card-play card-loop">🔁 이 문제 반복</button>
       ${sentences}
       ${c.expr ? '<div class="expr">' + c.expr + '</div>' : ''}
     </div>`;
   const pEls = Array.from(card.querySelectorAll('.a p'));
-  const items = pEls.map((el, i) => ({ el, text: speakText(parts[i]) })).filter(x => x.text);
+  const qItem = { el: card.querySelector('.q'), text: speakText(c.q), pauseAfter: 1500 };
+  const items = [qItem, ...pEls.map((el, i) => ({ el, text: speakText(parts[i]) })).filter(x => x.text)];
   card._items = items;
-  card.querySelector('.card-play').onclick = () => { card.classList.add('open'); playList(items); };
+  card.querySelector('.card-play').onclick = () => { card.classList.add('open'); playList(items, false, (ci + 1) + '번 문제'); };
+  card.querySelector('.card-loop').onclick = () => { card.classList.add('open'); playList(items, true, (ci + 1) + '번 문제'); };
   items.forEach(it => { it.el.querySelector('.sp').onclick = () => playList([it]); });
   return card;
 }
@@ -344,7 +361,13 @@ function setRate(r) {
   document.getElementById('r10').classList.toggle('on', r === 1);
 }
 function clearHl() { document.querySelectorAll('.speaking').forEach(e => e.classList.remove('speaking')); }
-function stopAll() { token++; try { speechSynthesis.cancel(); } catch (e) {} clearHl(); }
+function stopAll() { token++; try { speechSynthesis.cancel(); } catch (e) {} clearHl(); showLoop(''); }
+function showLoop(label) {
+  const b = document.getElementById('loopinfo');
+  if (!b) return;
+  b.textContent = label ? `🔁 ${label} 반복 중 · 눌러서 정지` : '';
+  b.classList.toggle('on', !!label);
+}
 function say(text, onend) {
   const u = new SpeechSynthesisUtterance(text);
   u.lang = 'en-US'; u.rate = rate;
@@ -353,15 +376,21 @@ function say(text, onend) {
   u.onend = onend; u.onerror = onend;
   speechSynthesis.speak(u);
 }
-function playList(items) {
+function playList(items, loop = false, label = '') {
   stopAll();
+  if (loop) showLoop(label || '선택');
   const my = token; let i = 0;
   const next = () => {
-    if (my !== token || i >= items.length) { if (my === token) clearHl(); return; }
+    if (my !== token) return;
+    if (i >= items.length) {
+      if (!loop) { clearHl(); return; }
+      i = 0; clearHl();
+      return setTimeout(next, 2500);   // 한 바퀴 끝나면 2.5초 쉬고 다시
+    }
     const it = items[i++];
     clearHl(); it.el.classList.add('speaking');
     it.el.scrollIntoView({ block: 'center', behavior: 'smooth' });
-    say(it.text, () => { if (my === token) next(); });
+    say(it.text, () => { if (my === token) setTimeout(next, it.pauseAfter || 0); });
   };
   next();
 }
