@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>OPIc Q&A 카드</title>
+<title>OPIc AL 연습</title>
 <style>
   :root {
     --bg: #0f1115;
@@ -132,210 +132,363 @@
   .card-play { margin: 4px 0 10px; color: var(--accent); }
   .sp { cursor: pointer; color: var(--accent); margin-right: 8px; font-size: 16px; }
   .a p.speaking { background: rgba(79,140,255,0.18); border-radius: 6px; }
+  .tabs { display: flex; gap: 6px; margin: 4px 0 14px; }
+  .tabs button { flex: 1; padding: 12px 6px; border-radius: 10px; border: 1px solid var(--border); background: var(--card); color: var(--muted); font-size: 17px; font-weight: 600; cursor: pointer; }
+  .tabs button.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .pane { display: none; }
+  .pane.on { display: block; }
+  .group-title { font-size: 22px; font-weight: 800; margin: 34px 0 4px; }
+  .group-desc { color: var(--muted); font-size: 15px; margin-bottom: 4px; }
+  .todo { background: transparent; border: 1px dashed var(--border); border-radius: 10px; padding: 12px 16px; margin-bottom: 10px; font-size: 16px; color: var(--muted); }
+  .todo b { color: #f0a35e; font-weight: 600; margin-right: 6px; }
+  .modes { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+  .modes button, .pbtn { padding: 14px 8px; border-radius: 10px; border: 1px solid var(--border); background: var(--card); color: var(--text); font-size: 16px; cursor: pointer; }
+  .modes button.on { border-color: var(--accent); color: var(--accent); }
+  .gsel { width: 100%; padding: 12px; border-radius: 8px; background: var(--card); color: var(--text); border: 1px solid var(--border); font-size: 16px; margin-bottom: 14px; }
+  .qbox { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px 18px; min-height: 180px; }
+  .qmeta { display: flex; justify-content: space-between; color: var(--muted); font-size: 14px; margin-bottom: 10px; }
+  .qtext { font-size: 20px; line-height: 1.6; font-weight: 600; }
+  .qtext.blur { filter: blur(7px); user-select: none; }
+  .timer { font-size: 54px; font-weight: 800; text-align: center; margin: 18px 0 8px; font-variant-numeric: tabular-nums; }
+  .timer.over { color: #ff7a7a; }
+  .prow { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+  .pbtn.main { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 700; }
+  .hint { color: var(--muted); font-size: 14px; line-height: 1.6; margin-top: 12px; }
+  .box { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; margin-bottom: 12px; font-size: 16px; }
+  .box h3 { margin: 0 0 10px; font-size: 18px; color: var(--accent); }
+  .box ul { margin: 0; padding-left: 20px; }
+  .box li { margin-bottom: 6px; }
+  .phase { display: flex; justify-content: space-between; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+  .phase:last-child { border-bottom: 0; }
+  .phase small { color: var(--muted); display: block; }
+  .badge { font-size: 13px; padding: 2px 8px; border-radius: 10px; background: rgba(79,140,255,0.15); color: var(--accent); white-space: nowrap; align-self: center; }
 </style>
 </head>
 <body>
 
-<h1>OPIc Q&A 카드 — 호바리</h1>
-<div class="sub">질문 탭하면 모범답안 펼쳐짐. <strong style="color:#ffd479">굵은 글씨</strong> = 관용구/고급 시제/어려운 표현. 서베이 확정 항목(운동/여행/여가) + 돌발 대비(Tech/SNS) + 롤플레이 패턴 포함. (업데이트: 2026-08-05)</div>
+<h1>OPIc AL — 호바리</h1>
+<div class="sub" id="subline"></div>
 
-<div class="filter-bar">
-  <select id="filter" onchange="filterSections()">
-    <option value="all">전체 보기</option>
-  </select>
-  <div class="ctrl">
-    <button onclick="playAll()">▶ 1번부터 전체 재생</button>
-    <button onclick="stopAll()">■ 정지</button>
-    <button id="r08" onclick="setRate(0.8)">0.8x</button>
-    <button id="r10" class="on" onclick="setRate(1)">1x</button>
-  </div>
+<div class="tabs">
+  <button id="t-cards" class="on" onclick="tab('cards')">카드</button>
+  <button id="t-practice" onclick="tab('practice')">실전 연습</button>
+  <button id="t-progress" onclick="tab('progress')">진도</button>
 </div>
 
-<div id="content"></div>
+<!-- 카드 -->
+<div class="pane on" id="p-cards">
+  <div class="filter-bar">
+    <select id="filter" onchange="filterGroups()"><option value="all">전체 보기</option></select>
+    <div class="ctrl">
+      <button onclick="playAll()">▶ 전체 재생</button>
+      <button onclick="stopAll()">■ 정지</button>
+      <button id="r08" onclick="setRate(0.8)">0.8x</button>
+      <button id="r10" class="on" onclick="setRate(1)">1x</button>
+    </div>
+  </div>
+  <div id="content"></div>
+</div>
 
+<!-- 실전 연습 -->
+<div class="pane" id="p-practice">
+  <div class="modes">
+    <button id="m-single" class="on" onclick="setMode('single')">한 문제</button>
+    <button id="m-combo" onclick="setMode('combo')">콤보 3연타</button>
+    <button id="m-exam" onclick="setMode('exam')">실전 15문항</button>
+  </div>
+  <select class="gsel" id="gsel"></select>
+  <div class="qbox">
+    <div class="qmeta"><span id="qinfo">시작을 누르세요</span><span id="qcount"></span></div>
+    <div class="qtext" id="qtext">질문이 여기에 나와요. 실제 시험처럼 먼저 듣고, 필요하면 글자를 보세요.</div>
+  </div>
+  <div class="timer" id="timer">2:00</div>
+  <div class="prow">
+    <button class="pbtn main" id="startBtn" onclick="startPractice()">시작</button>
+    <button class="pbtn" onclick="nextQ()">다음 문제 ▶</button>
+    <button class="pbtn" id="replayBtn" onclick="replayQ()">질문 다시 듣기 (1회)</button>
+    <button class="pbtn" onclick="toggleText()">글자 보기/숨기기</button>
+  </div>
+  <div class="hint">질문은 시험처럼 최대 2번만 들을 수 있어요. 2분이 지나면 타이머가 빨갛게 바뀌어요(계속 말해도 돼요). 휴대폰으로 녹음하면서 답하고, 다 끝나면 진도 탭의 셀프 채점으로 확인하세요.<br>연습 문항은 직접 만든 것이라 실제 기출 문장과 다를 수 있어요.</div>
+</div>
+
+<!-- 진도 -->
+<div class="pane" id="p-progress"><div id="progressBox"></div></div>
+
+<script src="cards.js"></script>
+<script src="bank.js"></script>
+<script src="progress.js"></script>
 <script>
-const data = [
-  {
-    section: "자기소개",
-    cards: [
-      { q: "Please introduce yourself.", a: "Hi Ava, it's nice to meet you. My name is Hyohyeok, and I live in Gimcheon, a small city right in the middle of South Korea. Since there isn't a whole lot to do around here, I've <strong>gotten really into</strong> exercise as a way to fill my free time — I go to the gym every morning and go swimming every evening, and <strong>I've kept that routine up for years now</strong>. Besides working out, I also love cooking, especially for my wife. I'm pretty good at making Korean dishes like kimchi-jjigae and bulgogi, so <strong>it's actually a bit of a shame</strong> you can't try them, Ava. Anyway, that's a little about me — let's get started.", expr: "표현: gotten really into / I've kept that routine up (현재완료) / it's actually a bit of a shame" }
-    ]
-  },
-  {
-    section: "운동 — 수영",
-    cards: [
-      { q: "Describe your swimming routine in detail.", a: "I usually go swimming around 7 p.m. on weekdays, right after I <strong>wrap up</strong> my day. I'm actually part of a masters class, so I'm swimming alongside a lot of people who are seriously good at it, which keeps me motivated to keep improving. Before getting in the pool, I always take a shower and do a quick warm-up — rotating my shoulders, arms, and ankles — so I don't pull anything. The class runs for about 50 minutes, during which I practice four different strokes: freestyle, butterfly, breaststroke, and so on. By the end I'm completely exhausted, but there's this <strong>exhilarating feeling</strong> right after, and I think that's honestly why I keep <strong>dragging myself</strong> there every single day, even when I'm tired.", expr: "표현: exhilarating feeling / dragging myself there / wrap up my day" },
-      { q: "Tell me about a swimming competition you participated in.", a: "The last time I competed was last month, in the 50m breaststroke — my main stroke. My personal best <strong>had been stuck</strong> at 40 seconds for a while, and no matter how hard I trained, I couldn't seem to <strong>break through that plateau</strong>. So I trained even harder leading up to the meet — stretching, dryland workouts, extra swimming — and on competition day I actually managed to set a new personal record, which felt incredible. Still, I only finished 4th overall, <strong>just barely missing the podium</strong> despite the new PR, so I'm now training even harder for next month's meet, <strong>determined to turn</strong> that near-miss into an actual medal.", expr: "표현: hit/break through a plateau / narrowly (just barely) missing / had been stuck (과거완료)" },
-      { q: "Was there ever a problem or unexpected situation related to swimming?", a: "Something unexpected happened related to swimming last summer. My wife and I went to Gangneung to enjoy the beach, and we had a great time taking in the exotic scenery, eating seafood, and snorkeling. But <strong>things took a turn</strong> during a surfing lesson we signed up for — <strong>I'd surfed before</strong>, but it was my wife's first time, and <strong>to make matters worse</strong>, she wasn't a very strong swimmer. A big wave suddenly hit us during the lesson, and she ended up getting disoriented in the water. <strong>Without thinking twice</strong>, I swam straight to her and pulled her to safety, and thanks to the lifeguard, we grabbed some flotation tubes and made it back to shore safely. That experience was <strong>so terrifying that, as a result</strong>, my wife decided to start taking swimming lessons.", expr: "표현: things took a turn / to make matters worse / I'd surfed before (과거완료) / so~that, as a result" }
-    ]
-  },
-  {
-    section: "운동 — 헬스",
-    cards: [
-      { q: "How is your gym routine part of your daily life?", a: "Every morning I <strong>hit the gym</strong> before work — <strong>I've kept this up</strong> for about 10 years, which is why I'm in noticeably better shape than most people my age. It's mainly focused on strength training, and I usually listen to pop music, especially Ed Sheeran, to stay energized while lifting. This routine <strong>has become such a fixed part of my day</strong> that skipping it actually feels more uncomfortable than doing it.", expr: "표현: hit the gym / I've kept this up (현재완료)" }
-    ]
-  },
-  {
-    section: "조깅/걷기 · 공원가기",
-    cards: [
-      { q: "Tell me about a park you go to and what you do there.", a: "There's a riverside park near my place that I go to fairly often — partly to relax, and partly because it's where I jog. What's a bit unusual about me is that I actually jog more in winter than summer, since <strong>I can't stand the heat</strong> or direct sunlight, so I always go at night <strong>regardless of the season</strong>. The same park also has an extreme sports facility built into it, and even though I don't do extreme sports myself, I like watching the people who do — they seem <strong>completely unafraid of</strong> getting hurt, which amazes me every time. So while they treat the park as a playground for taking risks, I treat it as my quiet, sun-free jogging route.", expr: "표현: can't stand ~ / regardless of the season" }
-    ]
-  },
-  {
-    section: "영화보기",
-    cards: [
-      { q: "Tell me about a movie that left an impression on you.", a: "One movie that really stood out to me recently was \"Hope,\" directed by Na Hong-jin, whose earlier films <strong>I'd already been a fan of</strong>. <strong>I've always liked</strong> sci-fi as a genre, but what made this one special was that it was a <strong>distinctly Korean take on</strong> sci-fi, which felt refreshing compared to the usual Hollywood blockbusters. It gave me a different perspective on what the genre could look like outside the typical big-budget formula.", expr: "표현: distinctly Korean take on / I'd already been a fan of (과거완료)" }
-    ]
-  },
-  {
-    section: "음악감상하기",
-    cards: [
-      { q: "What kind of music do you listen to, and when?", a: "I mostly listen to pop music, and Ed Sheeran is my favorite artist <strong>by far</strong>. I usually listen while driving or working out, since music helps me stay energized and focused rather than just sitting in silence. <strong>It's become such a habit that</strong> a workout without music feels noticeably less motivating.", expr: "표현: by far / it's become such a habit that (현재완료)" }
-    ]
-  },
-  {
-    section: "해외여행",
-    cards: [
-      { q: "Tell me about a memorable trip abroad.", a: "My most memorable trip abroad was my honeymoon in Bali with my wife — it was actually my first time in Southeast Asia. <strong>What surprised me was</strong> how well the food suited my taste, and <strong>on top of that</strong>, everyone we met was incredibly kind and welcoming. We stayed at a huge luxury resort, and <strong>being pampered</strong> like that for days made the whole trip <strong>feel like a dream rather than reality</strong>.", expr: "표현: what surprised me was / on top of that / being pampered" },
-      { q: "Did you ever face a problem while preparing for or during that trip?", a: "Right before we were supposed to leave for our honeymoon, we realized my wife <strong>had lost</strong> her passport — <strong>as you can imagine</strong>, we panicked, since we thought the whole trip might fall apart. Fortunately, the embassy and our travel agency <strong>stepped in</strong> and helped us sort it out quickly, <strong>which meant that</strong> we ended up making it to Bali without missing our flight after all. <strong>Looking back on it</strong>, it taught me to always double-check documents days in advance rather than the night before.", expr: "표현: had lost (과거완료) / stepped in (구동사) / looking back on it" }
-    ]
-  },
-  {
-    section: "국내여행 · 캠핑 · 해변",
-    cards: [
-      { q: "Tell me about a camping or domestic trip you went on.", a: "My first-ever camping trip was a car-camping trip to Uljin in my Tesla, right by the beach. Since it was my first time, we kept things minimal and didn't over-prepare, but <strong>that simplicity ended up being part of the charm</strong>. During the day we went snorkeling and swam right off the beach, and in the evening we grilled meat and just relaxed without any fixed schedule — <strong>despite how basic</strong> our setup was, it turned out to be <strong>one of the most enjoyable trips I've had</strong>. It made me realize that a trip doesn't need to be elaborate to be memorable.", expr: "표현: ended up being / despite how basic / one of the most ~ I've had (현재완료)" }
-    ]
-  },
-  {
-    section: "집에서 보내는 휴가",
-    cards: [
-      { q: "How do you like to spend a vacation day at home?", a: "When it's this hot out, my ideal way to spend a vacation day is staying home with the AC on, having a beer, and playing computer games. League of Legends is my favorite by far, and I'm also a big fan of watching professional e-sports — Faker <strong>is basically a household name</strong> at this point if you follow the scene at all. <strong>Instead of</strong> going out and dealing with the heat and crowds, I find just as much excitement staying in and watching top-tier matches.", expr: "표현: is basically a household name / instead of ~, I find just as much" }
-    ]
-  },
-  {
-    section: "돌발 — Technology",
-    cards: [
-      { q: "What was the latest electronic device you bought?", a: "I recently got a Tesla, and the experience honestly <strong>reminds me of</strong> the first time I switched to a smartphone — that's how packed with new technology it feels. <strong>What makes the contrast even bigger is</strong> that my previous car was over 10 years old, so the gap in technology was huge. On top of that, since it's electric, it's better for the environment, and the fuel cost is roughly a third of what I used to pay for gas. As a result, <strong>I've become</strong> one of those people who can't stop talking about how good EVs are.", expr: "표현: reminds me of / what makes the contrast even bigger is / I've become (현재완료)" }
-    ]
-  },
-  {
-    section: "돌발 — SNS",
-    cards: [
-      { q: "Tell me about your social media habits.", a: "I used to spend a lot of time on Instagram, scrolling through it almost out of habit. However, at some point I realized it was <strong>eating up way more of my time than it was worth</strong>, so <strong>I've been deliberately cutting back</strong> lately. Nowadays I basically only use it for the messenger function, rather than browsing feeds like I used to. Looking back, I think it was a good change, since I have noticeably more free time now.", expr: "표현: eating up ~ than it was worth / I've been deliberately cutting back (현재완료진행)" }
-    ]
-  },
-  {
-    section: "롤플레이 필수 패턴",
-    cards: [
-      { q: "Type A — 질문하기형 (예: 여행 다녀온 친구에게 전화해서 질문하기)", a: "흐름: 인사 → 전화 건 이유 → 질문 3~4개 → 감사/마무리<br><br>Hello, is this Soo-Ahn? It's me, Jae-Hyeong. I heard you just got back from a trip. How was it? <strong>The reason I'm calling is because</strong> I want to take my family on a trip too and I'd like to ask a few questions. Which website did you use to book your flights? Were you happy with your hotel? Are there any restaurants you'd recommend? Thanks for your help — I'll talk to you soon!", expr: "필수표현: The reason I'm calling is because ~ / I heard that ~" },
-      { q: "Type B — 문제 해결형 (예: 약속 취소/변경하기)", a: "흐름: 인사 → 원래 약속 언급 → 문제(이유) 설명 → 대안 2~3개 제시 → 마무리<br><br>Hello, is this Jin-Hee? It's Joo-Hyun. <strong>I know we're supposed to</strong> meet tomorrow, but I don't think I can make it — <strong>something came up</strong>. <strong>I was wondering if</strong> you're free next weekend instead. If not, let me know when works for you. Sorry about this, and call me back when you get this. Bye.", expr: "필수표현: I know we're supposed to ~, but / I was wondering if ~ / something came up" }
-    ]
-  }
+const GROUPS = [
+  { id: "intro",   name: "자기소개",          desc: "채점 안 함. 짧고 깔끔하게" },
+  { id: "travel",  name: "여행",              desc: "캠핑 · 차로 드라이브 · 집 휴가 · 국내 여행 · 해외여행" },
+  { id: "gym",     name: "운동 시설",         desc: "수영 · 헬스" },
+  { id: "park",    name: "공원",              desc: "공원 · 걷기 · 조깅" },
+  { id: "culture", name: "문화",              desc: "영화 · 음악 감상" },
+  { id: "random",  name: "돌발",              desc: "서베이와 상관없이 2세트 정도 나옴" },
+  { id: "rp",      name: "롤플레이 (11~13)",  desc: "질문하기 → 대안 제시 → 관련 경험" },
+  { id: "adv",     name: "어드밴스 (14~15)",  desc: "비교·설명 → 이슈·의견" },
 ];
+const gName = id => (GROUPS.find(g => g.id === id) || {}).name || id;
 
+document.getElementById('subline').textContent =
+  `목표 ${progress.goal} · 업데이트 ${progress.updated}`;
+
+function tab(id) {
+  ['cards','practice','progress'].forEach(t => {
+    document.getElementById('t-' + t).classList.toggle('on', t === id);
+    document.getElementById('p-' + t).classList.toggle('on', t === id);
+  });
+  stopAll();
+}
+
+/* ---------- 카드 ---------- */
 const container = document.getElementById('content');
 const filterSelect = document.getElementById('filter');
 
-data.forEach((sec, si) => {
+GROUPS.forEach(g => {
   const opt = document.createElement('option');
-  opt.value = 'sec-' + si;
-  opt.textContent = sec.section;
+  opt.value = g.id; opt.textContent = g.name;
   filterSelect.appendChild(opt);
 
-  const title = document.createElement('div');
-  title.className = 'section-title';
-  title.id = 'sec-' + si;
-  title.textContent = sec.section;
-  container.appendChild(title);
+  const wrap = document.createElement('div');
+  wrap.className = 'group'; wrap.dataset.group = g.id;
+  wrap.innerHTML = `<div class="group-title">${g.name}</div><div class="group-desc">${g.desc}</div>`;
+  container.appendChild(wrap);
 
-  sec.cards.forEach((c, ci) => {
-    const card = document.createElement('div');
-    card.className = 'card';
-    card.dataset.section = 'sec-' + si;
-    const parts = c.a.split(/(?<=[.?!])\s+(?=[A-Z가-힣])/);
-    const sentences = parts.map(s => '<p><span class="sp">▶</span>' + s.trim() + '</p>').join('');
-    card.innerHTML = `
-      <div class="q" onclick="this.parentElement.classList.toggle('open')">
-        <span>${ci + 1}. ${c.q}</span>
-        <span class="arrow">▶</span>
-      </div>
-      <div class="a">
-        <button class="card-play">▶ 이 답변 전체 재생</button>
-        ${sentences}
-        ${c.expr ? '<div class="expr">' + c.expr + '</div>' : ''}
-      </div>
-    `;
-    container.appendChild(card);
-    const pEls = Array.from(card.querySelectorAll('.a p'));
-    const items = pEls.map((el, i) => ({ el, text: speakText(parts[i]) })).filter(x => x.text);
-    card._items = items;
-    card.querySelector('.card-play').onclick = () => { card.classList.add('open'); playList(items); };
-    items.forEach(it => { it.el.querySelector('.sp').onclick = () => playList([it]); });
+  const secs = cards.filter(s => s.group === g.id);
+  secs.forEach(sec => {
+    const title = document.createElement('div');
+    title.className = 'section-title';
+    title.textContent = sec.section;
+    wrap.appendChild(title);
+    sec.cards.forEach((c, ci) => wrap.appendChild(makeCard(c, ci)));
   });
+
+  // 아직 모범답안이 없는 연습 문항 = 앞으로 채울 자리
+  const answered = new Set(secs.flatMap(s => s.cards.map(c => c.q)));
+  const todos = bank.filter(b => b.g === g.id && !answered.has(b.q));
+  if (todos.length) {
+    const t = document.createElement('div');
+    t.className = 'section-title';
+    t.style.color = '#f0a35e';
+    t.textContent = `준비할 질문 ${todos.length}개`;
+    wrap.appendChild(t);
+    todos.forEach(b => {
+      const d = document.createElement('div');
+      d.className = 'todo';
+      d.innerHTML = `<b>${b.item} · ${b.t}</b>${b.q}`;
+      wrap.appendChild(d);
+    });
+  }
 });
 
+function makeCard(c, ci) {
+  const card = document.createElement('div');
+  card.className = 'card';
+  const parts = c.a.split(/(?<=[.?!])\s+(?=[A-Z가-힣])/);
+  const sentences = parts.map(s => '<p><span class="sp">▶</span>' + s.trim() + '</p>').join('');
+  card.innerHTML = `
+    <div class="q" onclick="this.parentElement.classList.toggle('open')">
+      <span>${ci + 1}. ${c.q}</span><span class="arrow">▶</span>
+    </div>
+    <div class="a">
+      <button class="card-play">▶ 이 답변 전체 재생</button>
+      ${sentences}
+      ${c.expr ? '<div class="expr">' + c.expr + '</div>' : ''}
+    </div>`;
+  const pEls = Array.from(card.querySelectorAll('.a p'));
+  const items = pEls.map((el, i) => ({ el, text: speakText(parts[i]) })).filter(x => x.text);
+  card._items = items;
+  card.querySelector('.card-play').onclick = () => { card.classList.add('open'); playList(items); };
+  items.forEach(it => { it.el.querySelector('.sp').onclick = () => playList([it]); });
+  return card;
+}
+
+function filterGroups() {
+  const val = filterSelect.value;
+  document.querySelectorAll('.group').forEach(g =>
+    g.classList.toggle('hidden', val !== 'all' && g.dataset.group !== val));
+}
+
+/* ---------- 읽어주기 ---------- */
 let rate = 1, token = 0;
 function speakText(html) {
   const d = document.createElement('div');
   d.innerHTML = html.replace(/<br\s*\/?>/g, '\n');
-  return d.textContent.split('\n')
-    .filter(l => l.trim() && !l.trim().startsWith('흐름'))
-    .join(' ').trim();
+  return d.textContent.split('\n').filter(l => l.trim() && !l.trim().startsWith('흐름')).join(' ').trim();
 }
 function setRate(r) {
   rate = r;
   document.getElementById('r08').classList.toggle('on', r === 0.8);
   document.getElementById('r10').classList.toggle('on', r === 1);
 }
-function clearHl() {
-  document.querySelectorAll('.speaking').forEach(e => e.classList.remove('speaking'));
-}
-function stopAll() {
-  token++;
-  speechSynthesis.cancel();
-  clearHl();
+function clearHl() { document.querySelectorAll('.speaking').forEach(e => e.classList.remove('speaking')); }
+function stopAll() { token++; try { speechSynthesis.cancel(); } catch (e) {} clearHl(); }
+function say(text, onend) {
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'en-US'; u.rate = rate;
+  const v = speechSynthesis.getVoices().find(v => v.lang.startsWith('en'));
+  if (v) u.voice = v;
+  u.onend = onend; u.onerror = onend;
+  speechSynthesis.speak(u);
 }
 function playList(items) {
   stopAll();
-  const my = token;
-  let i = 0;
+  const my = token; let i = 0;
   const next = () => {
     if (my !== token || i >= items.length) { if (my === token) clearHl(); return; }
     const it = items[i++];
-    clearHl();
-    it.el.classList.add('speaking');
+    clearHl(); it.el.classList.add('speaking');
     it.el.scrollIntoView({ block: 'center', behavior: 'smooth' });
-    const u = new SpeechSynthesisUtterance(it.text);
-    u.lang = 'en-US';
-    u.rate = rate;
-    const v = speechSynthesis.getVoices().find(v => v.lang.startsWith('en'));
-    if (v) u.voice = v;
-    u.onend = next;
-    u.onerror = () => { if (my === token) next(); };
-    speechSynthesis.speak(u);
+    say(it.text, () => { if (my === token) next(); });
   };
   next();
 }
 function playAll() {
   const all = [];
-  document.querySelectorAll('.card').forEach(c => {
-    if (!c.classList.contains('hidden')) {
-      c.classList.add('open');
-      all.push(...c._items);
-    }
-  });
+  document.querySelectorAll('.group:not(.hidden) .card').forEach(c => { c.classList.add('open'); all.push(...c._items); });
   playList(all);
 }
 
-function filterSections() {
-  const val = filterSelect.value;
-  document.querySelectorAll('.section-title').forEach(t => {
-    t.classList.toggle('hidden', val !== 'all' && t.id !== val);
-  });
-  document.querySelectorAll('.card').forEach(c => {
-    c.classList.toggle('hidden', val !== 'all' && c.dataset.section !== val);
-  });
+/* ---------- 실전 연습 ---------- */
+let mode = 'single', queue = [], qi = -1, plays = 0, showText = false, tick = null, sec = 0;
+const gsel = document.getElementById('gsel');
+function fillGsel() {
+  gsel.innerHTML = '';
+  const opts = mode === 'exam' ? [['all', '전체에서 무작위']] :
+    [['all', '전체에서 무작위'], ['survey', '서베이 주제만'], ...GROUPS.filter(g => g.id !== 'intro').map(g => [g.id, g.name])];
+  opts.forEach(([v, t]) => { const o = document.createElement('option'); o.value = v; o.textContent = t; gsel.appendChild(o); });
+  gsel.disabled = mode === 'exam';
 }
+function setMode(m) {
+  mode = m;
+  ['single','combo','exam'].forEach(x => document.getElementById('m-' + x).classList.toggle('on', x === m));
+  fillGsel(); resetPractice();
+}
+const rnd = a => a[Math.floor(Math.random() * a.length)];
+const shuffle = a => a.map(x => [Math.random(), x]).sort((p, q) => p[0] - q[0]).map(p => p[1]);
+const SURVEY = ['travel','gym','park','culture'];
+function pool(sel) {
+  if (sel === 'all') return bank;
+  if (sel === 'survey') return bank.filter(b => SURVEY.includes(b.g));
+  return bank.filter(b => b.g === sel);
+}
+// 같은 주제 3문제: 묘사 → 루틴/비교 → 과거경험
+function comboFor(items) {
+  const byT = t => items.filter(b => b.t === t);
+  const first = rnd(byT('묘사').length ? byT('묘사') : items);
+  const mids = items.filter(b => b !== first && (b.t === '루틴' || b.t === '비교'));
+  const second = mids.length ? rnd(mids) : rnd(items.filter(b => b !== first));
+  const lasts = items.filter(b => b !== first && b !== second && b.t === '과거경험');
+  const third = lasts.length ? rnd(lasts) : rnd(items.filter(b => b !== first && b !== second));
+  return [first, second, third].filter(Boolean);
+}
+function topicCombo(g) {
+  const src = g === 'any' ? bank.filter(b => !b.set) : bank.filter(b => b.g === g);
+  const byItem = {};
+  src.forEach(b => (byItem[b.item] = byItem[b.item] || []).push(b));
+  const ok = Object.values(byItem).filter(a => a.length >= 3);
+  if (ok.length) return comboFor(rnd(ok));
+  // 돌발처럼 주제당 문항이 적으면 같은 그룹에서 3문제
+  return comboFor(shuffle(src).slice(0, 6));
+}
+function setCombo(g) {
+  const sets = [...new Set(bank.filter(b => b.g === g).map(b => b.set))];
+  const s = rnd(sets);
+  return bank.filter(b => b.set === s);
+}
+function buildQueue() {
+  const sel = gsel.value;
+  if (mode === 'single') return [rnd(pool(sel))];
+  if (mode === 'combo') {
+    if (sel === 'rp' || sel === 'adv') return setCombo(sel);
+    if (sel === 'all' || sel === 'survey') {
+      const g = sel === 'survey' ? rnd(SURVEY) : rnd([...SURVEY, 'random']);
+      return topicCombo(g);
+    }
+    return topicCombo(sel);
+  }
+  // 실전 15문항: 자기소개 + 서베이 2세트 + 돌발 1세트 + 롤플 + 어드밴스
+  const intro = { g: 'intro', item: '자기소개', t: '자기소개', q: 'Let\'s start the interview now. Tell me a little bit about yourself.' };
+  const sv = shuffle(SURVEY).slice(0, 2);
+  const parts = shuffle([topicCombo(sv[0]), topicCombo(sv[1]), topicCombo('random')]);
+  return [intro, ...parts.flat(), ...setCombo('rp'), ...setCombo('adv')];
+}
+function resetPractice() {
+  stopTimer(); stopAll(); queue = []; qi = -1;
+  document.getElementById('qinfo').textContent = '시작을 누르세요';
+  document.getElementById('qcount').textContent = '';
+  document.getElementById('qtext').textContent = '질문이 여기에 나와요. 실제 시험처럼 먼저 듣고, 필요하면 글자를 보세요.';
+  document.getElementById('qtext').classList.remove('blur');
+  document.getElementById('timer').textContent = '2:00';
+  document.getElementById('timer').classList.remove('over');
+  document.getElementById('startBtn').textContent = '시작';
+}
+function startPractice() { queue = buildQueue(); qi = -1; document.getElementById('startBtn').textContent = '새로 시작'; nextQ(); }
+function nextQ() {
+  if (!queue.length) return startPractice();
+  qi++;
+  if (qi >= queue.length) {
+    stopTimer(); stopAll();
+    document.getElementById('qinfo').textContent = '끝!';
+    document.getElementById('qtext').classList.remove('blur');
+    document.getElementById('qtext').textContent = '수고했어요. 녹음 다시 들으면서 진도 탭의 셀프 채점으로 확인하고, 막힌 질문은 Claude한테 가져가세요.';
+    return;
+  }
+  const b = queue[qi];
+  document.getElementById('qinfo').textContent = `${gName(b.g)} · ${b.item} · ${b.t}`;
+  document.getElementById('qcount').textContent = `${qi + 1} / ${queue.length}`;
+  const qt = document.getElementById('qtext');
+  qt.textContent = b.q; qt.classList.toggle('blur', !showText);
+  plays = 0; document.getElementById('replayBtn').disabled = false;
+  stopTimer(); document.getElementById('timer').textContent = '2:00'; document.getElementById('timer').classList.remove('over');
+  speakQ(true);
+}
+function speakQ(first) {
+  stopAll(); plays++;
+  if (plays >= 2) document.getElementById('replayBtn').disabled = true;
+  const my = token;
+  say(queue[qi].q, () => { if (my === token && first) startTimer(); });
+  if (first && !('speechSynthesis' in window)) startTimer();
+}
+function replayQ() { if (qi < 0 || qi >= queue.length || plays >= 2) return; stopTimer(); speakQ(false); startTimer(); }
+function toggleText() { showText = !showText; document.getElementById('qtext').classList.toggle('blur', !showText && qi >= 0 && qi < queue.length); }
+function startTimer() {
+  stopTimer(); sec = 0;
+  const el = document.getElementById('timer');
+  tick = setInterval(() => {
+    sec++;
+    const left = 120 - sec, a = Math.abs(left);
+    el.textContent = (left < 0 ? '+' : '') + Math.floor(a / 60) + ':' + String(a % 60).padStart(2, '0');
+    el.classList.toggle('over', left < 0);
+  }, 1000);
+}
+function stopTimer() { if (tick) clearInterval(tick); tick = null; }
+fillGsel();
+
+/* ---------- 진도 ---------- */
+(function renderProgress() {
+  const p = progress;
+  const doneQs = new Set(cards.flatMap(s => s.cards.map(c => c.q)));
+  const cover = GROUPS.filter(g => g.id !== 'intro').map(g => {
+    const n = cards.filter(s => s.group === g.id).reduce((a, s) => a + s.cards.length, 0);
+    const todo = bank.filter(b => b.g === g.id && !doneQs.has(b.q)).length;
+    return `<div class="phase"><div>${g.name}<small>모범답안 ${n}개 · 준비할 질문 ${todo}개</small></div></div>`;
+  }).join('');
+  document.getElementById('progressBox').innerHTML = `
+    <div class="box"><h3>일정</h3>${p.phases.map(ph =>
+      `<div class="phase"><div>${ph.name} <small>${ph.range} · ${ph.focus}</small></div>${ph.status ? `<span class="badge">${ph.status}</span>` : ''}</div>`).join('')}</div>
+    <div class="box"><h3>지금 약점</h3><ul>${p.weak.map(w => `<li>${w}</li>`).join('')}</ul></div>
+    <div class="box"><h3>덩어리별 준비 현황</h3>${cover}</div>
+    <div class="box"><h3>서베이</h3>${p.survey}</div>
+    <div class="box"><h3>셀프 채점 (녹음 듣고)</h3><ul>
+      <li>목소리: 끝이 흐려지지 않나, 크고 자신 있나</li>
+      <li>억양: 강세 살렸나, <b>외운 걸 떠올리는 티</b> 안 나나</li>
+      <li>내용: 3초 이상 멈춤 없나, 같은 말 다르게 했나, 서론-본론-결론</li>
+      <li>문법: 미완성 문장 없나, <b>과거·현재 시제</b> 맞나</li>
+      <li>발음: 휴대폰 음성 입력에 말해서 제대로 받아 적히나</li></ul></div>
+    <div class="box"><h3>기록</h3><ul>${p.log.slice().reverse().map(l => `<li>${l.date} — ${l.note}</li>`).join('')}</ul></div>`;
+})();
 </script>
 
 </body>
