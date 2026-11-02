@@ -94,6 +94,13 @@
     border-radius: 20px;
     margin-bottom: 8px;
   }
+  .mk { background: var(--card, #1b1f27); border-radius: 12px; padding: 12px 14px; margin: 8px 0; border-left: 4px solid #f0a35e; }
+  .mk.hot { border-left-color: #e5534b; }
+  .mk .mtop { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; opacity: .75; margin-bottom: 6px; }
+  .mk .wrong { text-decoration: line-through; opacity: .6; }
+  .mk .right { font-weight: 700; margin: 4px 0; }
+  .mk .why { font-size: 13px; opacity: .85; }
+  .mk .sp { cursor: pointer; margin-right: 6px; }
   .expr {
     font-size: 16px;
     line-height: 1.6;
@@ -172,6 +179,7 @@
 <div class="tabs">
   <button id="t-cards" class="on" onclick="tab('cards')">카드</button>
   <button id="t-practice" onclick="tab('practice')">실전 연습</button>
+  <button id="t-mistakes" onclick="tab('mistakes')">실수 노트</button>
   <button id="t-progress" onclick="tab('progress')">진도</button>
 </div>
 
@@ -211,12 +219,25 @@
   <div class="hint">질문은 시험처럼 최대 2번만 들을 수 있어요. 2분이 지나면 타이머가 빨갛게 바뀌어요(계속 말해도 돼요). 휴대폰으로 녹음하면서 답하고, 다 끝나면 진도 탭의 셀프 채점으로 확인하세요.<br>연습 문항은 직접 만든 것이라 실제 기출 문장과 다를 수 있어요.</div>
 </div>
 
+<!-- 실수 노트 -->
+<div class="pane" id="p-mistakes">
+  <div class="filter-bar">
+    <select id="mfilter" onchange="renderMistakes()">
+      <option value="all">전체</option><option value="hot">자주 나온 것 (2번 이상)</option>
+      <option value="시제">시제</option><option value="문법">문법</option><option value="표현">표현</option>
+      <option value="발음">발음</option><option value="막힘">막힘</option>
+    </select>
+  </div>
+  <div id="mistakeBox"></div>
+</div>
+
 <!-- 진도 -->
 <div class="pane" id="p-progress"><div id="progressBox"></div></div>
 
 <script src="cards.js"></script>
 <script src="bank.js"></script>
 <script src="progress.js"></script>
+<script src="mistakes.js"></script>
 <script>
 const GROUPS = [
   { id: "intro",   name: "자기소개",          desc: "채점 안 함. 짧고 깔끔하게" },
@@ -234,7 +255,7 @@ document.getElementById('subline').textContent =
   `목표 ${progress.goal} · 업데이트 ${progress.updated}`;
 
 function tab(id) {
-  ['cards','practice','progress'].forEach(t => {
+  ['cards','practice','mistakes','progress'].forEach(t => {
     document.getElementById('t-' + t).classList.toggle('on', t === id);
     document.getElementById('p-' + t).classList.toggle('on', t === id);
   });
@@ -465,6 +486,30 @@ function startTimer() {
 }
 function stopTimer() { if (tick) clearInterval(tick); tick = null; }
 fillGsel();
+
+/* ---------- 실수 노트 ---------- */
+function renderMistakes() {
+  const f = document.getElementById('mfilter').value;
+  let list = mistakes.slice();
+  if (f === 'hot') list = list.filter(m => m.cnt >= 2);
+  else if (f !== 'all') list = list.filter(m => m.type === f);
+  list.sort((a, b) => b.cnt - a.cnt);
+  const hot = mistakes.filter(m => m.cnt >= 2).length;
+  document.getElementById('mistakeBox').innerHTML =
+    `<div class="hint">빨간 줄 = 2번 이상 나온 실수 (${hot}개). 시험 전까지 이것부터 없애기. ▶ 누르면 맞는 문장 읽어줘요.</div>` +
+    list.map((m, i) => `
+      <div class="mk ${m.cnt >= 2 ? 'hot' : ''}">
+        <div class="mtop"><span>${m.type} · ${m.topic}</span><span>${m.date} · ${m.cnt}회</span></div>
+        <div class="wrong">✗ ${m.wrong}</div>
+        <div class="right"><span class="sp" data-t="${encodeURIComponent(m.right)}">▶</span>○ ${m.right}</div>
+        <div class="why">${m.why}</div>
+      </div>`).join('');
+  document.querySelectorAll('#mistakeBox .sp').forEach(el => el.onclick = () => {
+    const t = decodeURIComponent(el.dataset.t).replace(/\(.*?\)|—.*$/g, '');
+    playList([{ el: el.parentElement, text: speakText(t) }]);
+  });
+}
+renderMistakes();
 
 /* ---------- 진도 ---------- */
 (function renderProgress() {
