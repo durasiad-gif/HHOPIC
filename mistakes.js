@@ -2,9 +2,17 @@
 // type: 시제 / 문법 / 표현 / 발음 / 막힘
 const mistakes = [
   // ===== 11/3 · 공원 복습 + 조깅 콤보 =====
+  { type: "문법", wrong: "the experience was happened", right: "it happened", why: "happen은 수동태 ✗", topic: "조깅 과거경험(새 3번)", date: "11/3", cnt: 1 },
+  { type: "문법", wrong: "I have really memorable experience / I am morning person", right: "I have a really memorable experience / I'm a morning person", why: "관사 a 빠짐 (김천 a small city와 같은 실수)", topic: "조깅 과거경험(새 3번)", date: "11/3", cnt: 2 },
+  { type: "문법", wrong: "we went Bali", right: "we went to Bali", why: "장소 앞엔 to (go jogging만 to 없음)", topic: "조깅 과거경험(새 3번)", date: "11/3", cnt: 1 },
+  { type: "시제", wrong: "so I work early", right: "so I always woke up early", why: "woke up. 지난 일은 과거형", topic: "조깅 과거경험(새 3번)", date: "11/3", cnt: 1 },
+  { type: "시제", wrong: "it's the most peaceful run of my life (신혼여행 얘기)", right: "It was the most peaceful run of my life", why: "지난 일은 끝까지 과거형. 단, Bali has beaches는 지금도 사실이라 현재형 OK", topic: "조깅 과거경험(새 3번)", date: "11/3", cnt: 1 },
+  { type: "시제", wrong: "I never forget", right: "I'll never forget", why: "'절대 못 잊을 거야' = will", topic: "조깅 과거경험(새 3번)", date: "11/3", cnt: 1 },
+  { type: "발음", wrong: "astonishing (여러 번 고쳐 말함)", right: "breathtaking", why: "입에 안 붙어서 교체", topic: "조깅 과거경험(새 3번)", date: "11/3", cnt: 1 },
+  { type: "발음", wrong: "The most memorable one happened when I was on my honeymoon in Bali", right: "I'll never forget jogging in Bali on my honeymoon.", why: "긴 첫 문장이 입에 안 붙음 → 짧게", topic: "조깅 과거경험(새 3번)", date: "11/3", cnt: 1 },
   { type: "문법", wrong: "my wife really want me to", right: "my wife really wants me to", why: "3인칭 단수 → s. 하루에 두 번 나옴", topic: "공원 루틴·조깅 비교", date: "11/3", cnt: 2 },
-  { type: "문법", wrong: "enjoy go jogging / like go jogging", right: "enjoy going jogging / like going jogging", why: "enjoy·like 뒤엔 ing", topic: "조깅 묘사", date: "11/3", cnt: 2 },
-  { type: "문법", wrong: "went to jogging", right: "went jogging", why: "go + ~ing엔 to 없음", topic: "조깅 과거경험", date: "11/3", cnt: 1 },
+  { type: "문법", wrong: "enjoy go jogging / like go jogging / loved go jogging", right: "enjoy going jogging / like going jogging / loved going jogging", why: "enjoy·like·love 뒤엔 ing", topic: "조깅 묘사·과거경험", date: "11/3", cnt: 3 },
+  { type: "문법", wrong: "went to jogging / went go jogging", right: "went jogging", why: "go + ~ing엔 to·go 없음", topic: "조깅 과거경험", date: "11/3", cnt: 2 },
   { type: "문법", wrong: "a small park. is near my apartment", right: "There's a small park near my apartment", why: "첫 문장은 There's로 시작", topic: "공원 묘사(복습)", date: "11/3", cnt: 1 },
   { type: "문법", wrong: "it makes me refresh / jogging made me refresh", right: "it makes me feel refreshed / jogging helps me feel refreshed", why: "refresh는 '나를 상쾌하게' 뜻으로 이렇게 안 씀. 습관은 현재형", topic: "공원 묘사·조깅 묘사", date: "11/3", cnt: 2 },
   { type: "문법", wrong: "I really happy to go there", right: "I'm really happy to go there", why: "be동사 빠짐", topic: "공원 묘사(복습)", date: "11/3", cnt: 1 },
