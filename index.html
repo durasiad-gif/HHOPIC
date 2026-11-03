@@ -338,7 +338,7 @@ function makeCard(c, ci) {
   card._items = items;
   card.querySelector('.card-play').onclick = () => { card.classList.add('open'); playList(items, false, (ci + 1) + '번 문제'); };
   card.querySelector('.card-loop').onclick = () => { card.classList.add('open'); playList(items, true, (ci + 1) + '번 문제'); };
-  items.forEach(it => { it.el.querySelector('.sp').onclick = () => playList([it]); });
+  items.forEach(it => { const sp = it.el.querySelector('.sp'); if (sp) sp.onclick = (e) => { e.stopPropagation(); playList([it]); }; });
   return card;
 }
 
