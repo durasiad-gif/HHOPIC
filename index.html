@@ -137,8 +137,11 @@
   .ctrl button { flex: 1; }
   .ctrl button.on { background: var(--accent); border-color: var(--accent); color: #fff; }
   .card-play { margin: 4px 6px 10px 0; color: var(--accent); }
-  .sec-ctrl { display: flex; gap: 6px; margin: 2px 0 8px; }
-  .sec-ctrl button { flex: 1; padding: 7px 8px; border-radius: 8px; border: 1px solid var(--accent); background: transparent; color: var(--accent); font-size: 13px; cursor: pointer; }
+  .pad { display: grid; grid-template-columns: 44px 1fr 1fr; gap: 6px; align-items: center; margin: 4px 0 10px; }
+  .pad.combo { margin: 2px 0 10px; padding: 8px; border: 1px dashed var(--accent); border-radius: 10px; }
+  .pad .pl { font-size: 13px; opacity: .8; }
+  .pad button { padding: 7px 6px; border-radius: 8px; border: 1px solid var(--accent); background: transparent; color: var(--accent); font-size: 13px; cursor: pointer; }
+  .pad .ptitle { grid-column: 1 / -1; font-size: 12px; opacity: .75; }
   .loopinfo { position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%); background: var(--accent); color: #fff; padding: 8px 14px; border-radius: 20px; font-size: 13px; display: none; z-index: 50; }
   .loopinfo.on { display: block; }
   .sp { cursor: pointer; color: var(--accent); margin-right: 8px; font-size: 16px; }
@@ -289,13 +292,12 @@ GROUPS.forEach(g => {
     wrap.appendChild(title);
     const made = sec.cards.map((c, ci) => makeCard(c, ci));
     if (made.length > 1) {
-      const sc = document.createElement('div');
-      sc.className = 'sec-ctrl';
-      sc.innerHTML = `<button>▶ 콤보 전체 재생</button><button>🔁 콤보 반복</button>`;
-      const all = () => { made.forEach(c => c.classList.add('open')); return made.flatMap(c => c._items); };
-      sc.children[0].onclick = () => playList(all(), false, sec.section);
-      sc.children[1].onclick = () => playList(all(), true, sec.section);
-      wrap.appendChild(sc);
+      const open = () => made.forEach(c => c.classList.add('open'));
+      wrap.appendChild(makePad({
+        q:   () => made.flatMap(c => c._q),
+        a:   () => { open(); return made.flatMap(c => c._a); },
+        all: () => { open(); return made.flatMap(c => c._items); },
+      }, '콤보 전체', 'combo'));
     }
     made.forEach(c => wrap.appendChild(c));
   });
@@ -318,6 +320,22 @@ GROUPS.forEach(g => {
   }
 });
 
+// 문제 / 답변 / 같이 × 듣기 / 반복 버튼 묶음
+function makePad(get, label, cls = '') {
+  const pad = document.createElement('div');
+  pad.className = 'pad ' + cls;
+  const rows = [['q', '문제'], ['a', '답변'], ['all', '같이']];
+  pad.innerHTML = (cls === 'combo' ? `<div class="ptitle">🎧 ${label} 재생</div>` : '') +
+    rows.map(([k, n]) => `<span class="pl">${n}</span><button data-k="${k}" data-loop="0">▶ 듣기</button><button data-k="${k}" data-loop="1">🔁 반복</button>`).join('');
+  pad.querySelectorAll('button').forEach(b => b.onclick = (e) => {
+    e.stopPropagation();
+    const k = b.dataset.k, loop = b.dataset.loop === '1';
+    const n = rows.find(r => r[0] === k)[1];
+    playList(get[k](), loop, `${label} · ${n}`);
+  });
+  return pad;
+}
+
 function makeCard(c, ci) {
   const card = document.createElement('div');
   card.className = 'card';
@@ -328,16 +346,21 @@ function makeCard(c, ci) {
       <span>${ci + 1}. ${c.q}</span><span class="arrow">▶</span>
     </div>
     <div class="a">
-      <button class="card-play">▶ 재생</button><button class="card-play card-loop">🔁 이 문제 반복</button>
+      <div class="padslot"></div>
       ${sentences}
       ${c.expr ? '<div class="expr">' + c.expr + '</div>' : ''}
     </div>`;
   const pEls = Array.from(card.querySelectorAll('.a p'));
   const qItem = { el: card.querySelector('.q'), text: speakText(c.q), pauseAfter: 1500 };
-  const items = [qItem, ...pEls.map((el, i) => ({ el, text: speakText(parts[i]) })).filter(x => x.text)];
-  card._items = items;
-  card.querySelector('.card-play').onclick = () => { card.classList.add('open'); playList(items, false, (ci + 1) + '번 문제'); };
-  card.querySelector('.card-loop').onclick = () => { card.classList.add('open'); playList(items, true, (ci + 1) + '번 문제'); };
+  const aItems = pEls.map((el, i) => ({ el, text: speakText(parts[i]) })).filter(x => x.text);
+  const items = [qItem, ...aItems];
+  card._q = [qItem]; card._a = aItems; card._items = items;
+  const open = () => card.classList.add('open');
+  card.querySelector('.padslot').replaceWith(makePad({
+    q:   () => [qItem],
+    a:   () => { open(); return aItems; },
+    all: () => { open(); return items; },
+  }, (ci + 1) + '번'));
   items.forEach(it => { const sp = it.el.querySelector('.sp'); if (sp) sp.onclick = (e) => { e.stopPropagation(); playList([it]); }; });
   return card;
 }
