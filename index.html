@@ -40,6 +40,12 @@
     padding-bottom: 8px;
     border-bottom: 1px solid var(--border);
   }
+  .section-title.fold { cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 8px; user-select: none; }
+  .section-title.fold .farrow { font-size: 14px; transition: transform .2s; flex-shrink: 0; }
+  .section-title.fold.closed .farrow { transform: rotate(-90deg); }
+  .section-title.fold .fcnt { white-space: nowrap; font-size: 12px; color: var(--muted); font-weight: 400; margin-left: auto; }
+  .secbody.closed { display: none; }
+  .foldall { width: 100%; margin-top: 8px; }
   .card {
     background: var(--card);
     border: 1px solid var(--border);
@@ -194,6 +200,7 @@
 <div class="pane on" id="p-cards">
   <div class="filter-bar">
     <select id="filter" onchange="filterGroups()"><option value="all">전체 보기</option></select>
+    <div class="ctrl"><button class="foldall" onclick="foldAll(true)">▸ 콤보 모두 접기</button><button class="foldall" onclick="foldAll(false)">▾ 모두 펼치기</button></div>
     <div class="ctrl">
       <button onclick="playAll()">▶ 전체 재생</button>
       <button onclick="stopAll()">■ 정지</button>
@@ -287,19 +294,31 @@ GROUPS.forEach(g => {
   const secs = cards.filter(s => s.group === g.id);
   secs.forEach(sec => {
     const title = document.createElement('div');
-    title.className = 'section-title';
-    title.textContent = sec.section;
+    title.className = 'section-title fold';
+    title.innerHTML = `<span class="farrow">▼</span><span>${sec.section}</span><span class="fcnt">${sec.cards.length}문제</span>`;
     wrap.appendChild(title);
+    const body = document.createElement('div');
+    body.className = 'secbody';
+    wrap.appendChild(body);
+    const key = 'fold:' + sec.section;
+    const setFold = (closed, save = true) => {
+      title.classList.toggle('closed', closed); body.classList.toggle('closed', closed);
+      if (save) { try { localStorage.setItem(key, closed ? '1' : '0'); } catch (e) {} }
+    };
+    title.onclick = () => setFold(!body.classList.contains('closed'));
+    title._setFold = setFold;
+    let saved = null; try { saved = localStorage.getItem(key); } catch (e) {}
+    setFold(saved === '1', false);
     const made = sec.cards.map((c, ci) => makeCard(c, ci));
     if (made.length > 1) {
       const open = () => made.forEach(c => c.classList.add('open'));
-      wrap.appendChild(makePad({
+      body.appendChild(makePad({
         q:   () => made.flatMap(c => c._q),
         a:   () => { open(); return made.flatMap(c => c._a); },
         all: () => { open(); return made.flatMap(c => c._items); },
       }, '콤보 전체', 'combo'));
     }
-    made.forEach(c => wrap.appendChild(c));
+    made.forEach(c => body.appendChild(c));
   });
 
   // 아직 모범답안이 없는 연습 문항 = 앞으로 채울 자리
@@ -365,6 +384,9 @@ function makeCard(c, ci) {
   return card;
 }
 
+function foldAll(closed) {
+  document.querySelectorAll('.section-title.fold').forEach(t => t._setFold && t._setFold(closed));
+}
 function filterGroups() {
   const val = filterSelect.value;
   document.querySelectorAll('.group').forEach(g =>
@@ -419,7 +441,7 @@ function playList(items, loop = false, label = '') {
 }
 function playAll() {
   const all = [];
-  document.querySelectorAll('.group:not(.hidden) .card').forEach(c => { c.classList.add('open'); all.push(...c._items); });
+  document.querySelectorAll('.group:not(.hidden) .secbody:not(.closed) .card').forEach(c => { c.classList.add('open'); all.push(...c._items); });
   playList(all);
 }
 
