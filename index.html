@@ -153,7 +153,7 @@
   .sp { cursor: pointer; color: var(--accent); margin-right: 8px; font-size: 16px; }
   .a p.speaking { background: rgba(79,140,255,0.18); border-radius: 6px; }
   .tabs { display: flex; gap: 6px; margin: 4px 0 14px; }
-  .tabs button { flex: 1; padding: 12px 6px; border-radius: 10px; border: 1px solid var(--border); background: var(--card); color: var(--muted); font-size: 17px; font-weight: 600; cursor: pointer; }
+  .tabs button { flex: 1; padding: 12px 4px; border-radius: 10px; border: 1px solid var(--border); background: var(--card); color: var(--muted); font-size: 15px; font-weight: 600; cursor: pointer; white-space: nowrap; }
   .tabs button.on { background: var(--accent); border-color: var(--accent); color: #fff; }
   .pane { display: none; }
   .pane.on { display: block; }
@@ -182,6 +182,17 @@
   .phase:last-child { border-bottom: 0; }
   .phase small { color: var(--muted); display: block; }
   .badge { font-size: 13px; padding: 2px 8px; border-radius: 10px; background: rgba(79,140,255,0.15); color: var(--accent); white-space: nowrap; align-self: center; }
+
+  .st { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; margin-bottom: 12px; }
+  .st.old { opacity: .78; border-style: dashed; }
+  .sthead { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .stname { font-size: 18px; font-weight: 800; }
+  .stkw { color: var(--muted); font-size: 15px; margin-bottom: 10px; }
+  .stused div { font-size: 15px; margin-bottom: 6px; line-height: 1.5; }
+  .stused b { display: block; font-size: 13px; color: var(--accent); font-weight: 700; }
+  .stavoid { font-size: 14px; color: #f0a35e; margin-top: 8px; }
+  .stfit { font-size: 14px; color: var(--muted); margin-top: 4px; }
+  li.warn { color: #f0a35e; }
 </style>
 </head>
 <body>
@@ -192,6 +203,7 @@
 <div class="tabs">
   <button id="t-cards" class="on" onclick="tab('cards')">카드</button>
   <button id="t-practice" onclick="tab('practice')">실전 연습</button>
+  <button id="t-stories" onclick="tab('stories')">스토리</button>
   <button id="t-mistakes" onclick="tab('mistakes')">실수 노트</button>
   <button id="t-progress" onclick="tab('progress')">진도</button>
 </div>
@@ -233,6 +245,9 @@
   <div class="hint">질문은 시험처럼 최대 2번만 들을 수 있어요. 2분이 지나면 타이머가 빨갛게 바뀌어요(계속 말해도 돼요). 휴대폰으로 녹음하면서 답하고, 다 끝나면 진도 탭의 셀프 채점으로 확인하세요.<br>연습 문항은 직접 만든 것이라 실제 기출 문장과 다를 수 있어요.</div>
 </div>
 
+<!-- 스토리 색인 -->
+<div class="pane" id="p-stories"><div id="storyBox"></div></div>
+
 <!-- 실수 노트 -->
 <div class="pane" id="p-mistakes">
   <div class="filter-bar">
@@ -253,6 +268,7 @@
 <script src="bank.js"></script>
 <script src="progress.js"></script>
 <script src="mistakes.js"></script>
+<script src="stories.js"></script>
 <script>
 const GROUPS = [
   { id: "intro",   name: "자기소개",          desc: "채점 안 함. 짧고 깔끔하게" },
@@ -270,7 +286,7 @@ document.getElementById('subline').textContent =
   `목표 ${progress.goal} · 업데이트 ${progress.updated}`;
 
 function tab(id) {
-  ['cards','practice','mistakes','progress'].forEach(t => {
+  ['cards','practice','stories','mistakes','progress'].forEach(t => {
     document.getElementById('t-' + t).classList.toggle('on', t === id);
     document.getElementById('p-' + t).classList.toggle('on', t === id);
   });
@@ -584,6 +600,23 @@ function renderMistakes() {
   });
 }
 renderMistakes();
+
+/* ---------- 스토리 색인 ---------- */
+(function renderStories() {
+  const esc = t => t.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+  const combo = stories.filter(s => s.state === '콤보').length;
+  document.getElementById('storyBox').innerHTML =
+    `<div class="hint">같은 이야기는 여러 질문에 돌려쓰되, 문장은 매번 다르게. 새 답변 만들 땐 여기부터 확인. 콤보 완성 ${combo}개 · 개편 전 ${stories.length - combo}개</div>` +
+    `<div class="box"><h3>고정 설정</h3><ul>${settings.map(t => `<li${t.startsWith('⚠') ? ' class="warn"' : ''}>${esc(t)}</li>`).join('')}</ul></div>` +
+    stories.map(s => `
+      <div class="st ${s.state === '콤보' ? 'done' : 'old'}">
+        <div class="sthead"><span class="stname">${esc(s.name)}</span><span class="badge">${s.state} · ${s.used.length}곳</span></div>
+        <div class="stkw">${esc(s.kw)}</div>
+        <div class="stused">${s.used.map(u => `<div><b>${esc(u.where)}</b><span>${esc(u.line)}</span></div>`).join('')}</div>
+        <div class="stavoid">⚠ ${esc(s.avoid)}</div>
+        <div class="stfit">돌려쓰기: ${esc(s.fit)}</div>
+      </div>`).join('');
+})();
 
 /* ---------- 진도 ---------- */
 (function renderProgress() {
