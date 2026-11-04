@@ -422,7 +422,15 @@ function setRate(r) {
   document.getElementById('r10').classList.toggle('on', r === 1);
 }
 function clearHl() { document.querySelectorAll('.speaking').forEach(e => e.classList.remove('speaking')); }
-function stopAll() { token++; try { speechSynthesis.cancel(); } catch (e) {} clearHl(); showLoop(''); }
+// 재생 중엔 화면 안 꺼지게 (Wake Lock, 지원 안 되는 브라우저는 그냥 무시)
+let wakeLock = null, wantWake = false;
+async function keepAwake() {
+  wantWake = true;
+  try { if ('wakeLock' in navigator && !wakeLock) { wakeLock = await navigator.wakeLock.request('screen'); wakeLock.addEventListener('release', () => { wakeLock = null; }); } } catch (e) {}
+}
+function letSleep() { wantWake = false; try { if (wakeLock) wakeLock.release(); } catch (e) {} wakeLock = null; }
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && wantWake) keepAwake(); });
+function stopAll() { token++; try { speechSynthesis.cancel(); } catch (e) {} clearHl(); showLoop(''); letSleep(); }
 function showLoop(label) {
   const b = document.getElementById('loopinfo');
   if (!b) return;
@@ -440,11 +448,12 @@ function say(text, onend) {
 function playList(items, loop = false, label = '') {
   stopAll();
   if (loop) showLoop(label || '선택');
+  keepAwake();
   const my = token; let i = 0;
   const next = () => {
     if (my !== token) return;
     if (i >= items.length) {
-      if (!loop) { clearHl(); return; }
+      if (!loop) { clearHl(); letSleep(); return; }
       i = 0; clearHl();
       return setTimeout(next, 2500);   // 한 바퀴 끝나면 2.5초 쉬고 다시
     }
