@@ -1,6 +1,21 @@
 // 실수 노트. Claude가 연습 후 추가. cnt = 나온 횟수 (2번 이상이면 집중 대상)
 // type: 시제 / 문법 / 표현 / 발음 / 막힘
 const mistakes = [
+  // ===== 11/5 · 수영 콤보 복습 (두 문장씩 따라 하기 → 전체) =====
+  { type: "표현", wrong: "I was so scary", right: "I was so scared", why: "scary = 무서운(대상), scared = 무서워한(나). 뜻이 정반대", topic: "수영 과거경험", date: "11/5", cnt: 1 },
+  { type: "문법", wrong: "I'm a kind of expert swimmer", right: "I'm kind of an expert swimmer", why: "kind of = '좀', a는 뒤에", topic: "수영 묘사", date: "11/5", cnt: 2 },
+  { type: "문법", wrong: "I go to swimming", right: "I go swimming", why: "go + ~ing엔 to 없음 (went to jogging과 같은 실수)", topic: "수영 루틴", date: "11/5", cnt: 3 },
+  { type: "문법", wrong: "every weekdays / I always go swimming every weekday", right: "every weekday / I go swimming every weekday", why: "every 뒤는 단수, always랑 같이 안 씀", topic: "수영 루틴", date: "11/5", cnt: 2 },
+  { type: "문법", wrong: "when I arrive the swimming pool", right: "when I get there / when I arrive at the pool", why: "arrive 뒤엔 at", topic: "수영 루틴", date: "11/5", cnt: 1 },
+  { type: "문법", wrong: "I'm a local swimming team", right: "I'm on a local swimming team", why: "on이 빠지면 '내가 팀이다'", topic: "수영 루틴", date: "11/5", cnt: 1 },
+  { type: "시제", wrong: "(매년 하는 일) we entered competitions", right: "we enter competitions a few times a year", why: "반복되는 일은 현재형", topic: "수영 루틴", date: "11/5", cnt: 1 },
+  { type: "시제", wrong: "I've been swimming for half a year (2년 전 얘기)", right: "I'd only been swimming for about half a year", why: "그때까지 = 과거완료", topic: "수영 과거경험", date: "11/5", cnt: 2 },
+  { type: "문법", wrong: "my friends really wanted… followed him", right: "my friend really wanted… followed him", why: "친구 한 명", topic: "수영 과거경험", date: "11/5", cnt: 2 },
+  { type: "문법", wrong: "didn't have a confidence for my skills", right: "didn't have much confidence in my skills", why: "confidence는 셀 수 없음, in", topic: "수영 과거경험", date: "11/5", cnt: 1 },
+  { type: "표현", wrong: "maybe that's all / Maybe that's why… (마무리마다)", right: "That's my usual routine. / That's why I still enter competitions.", why: "확실한 얘기에 maybe = 자신 없게 들림. 11/5 세 문제 다 나옴", topic: "전체", date: "11/5", cnt: 4 },
+  { type: "표현", wrong: "(묘사 마무리) swimming is the best workout for after work", right: "it's my favorite place to work out after work", why: "묘사는 장소로 마무리. 그 문장은 루틴용", topic: "수영 묘사", date: "11/5", cnt: 2 },
+  { type: "표현", wrong: "(수영) the atmosphere was breathtaking", right: "it was amazing", why: "breathtaking은 조깅 발리에서 씀 → 반복 피하기", topic: "수영 과거경험", date: "11/5", cnt: 1 },
+  { type: "발음", wrong: "더 애트모스피어", right: "디 앳모스피어", why: "모음 앞 the = '디'", topic: "수영 과거경험", date: "11/5", cnt: 1 },
   // ===== 11/4 · 3일차: 조깅·공원 복습 + 수영 콤보 =====
   { type: "시제", wrong: "(루틴) I arrived at the park, I started stretching, I ran around", right: "I get there, I do some stretching, I jog around the pond", why: "루틴 = 매번 하는 일 = 현재형", topic: "공원 루틴(복습)", date: "11/4", cnt: 1 },
   { type: "시제", wrong: "I've been married three months ago / I married three months ago", right: "I got married three months ago", why: "ago 있으면 과거형", topic: "조깅 과거경험·공원 루틴(복습)", date: "11/4", cnt: 2 },
